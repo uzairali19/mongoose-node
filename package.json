@@ -1,0 +1,23 @@
+{
+  "name": "mongoose-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uzairali19/mongoose-node.git"
+  },
+  "author": "Uzair Ali",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/uzairali19/mongoose-node/issues"
+  },
+  "homepage": "https://github.com/uzairali19/mongoose-node#readme",
+  "dependencies": {
+    "mongoose": "^5.1.7"
+  }
+}
