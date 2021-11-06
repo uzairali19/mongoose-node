@@ -12,11 +12,6 @@ const dishSchema = new Schema(
       type: String,
       required: true,
     },
-    name: {
-      type: String,
-      required: true,
-      unique: true,
-    },
   },
   {
     timestamps: true,
@@ -25,4 +20,4 @@ const dishSchema = new Schema(
 
 var Dishes = mongoose.model("Dish", dishSchema);
 
-module.export = Dishes;
+module.exports = Dishes;
