@@ -1,0 +1,58 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+
+const promoRouter = express.Router();
+
+promoRouter.use(bodyParser.json());
+promoRouter
+  .route('/')
+  .all((req, res, next) => {
+    res.statusCode = 200;
+    res.setHeader('Content-type', 'text/plain');
+    next();
+  })
+  .get((req, res, next) => {
+    res.end('Will send all the promosions');
+  })
+  .post((req, res, next) => {
+    res.end(
+      'Will add the information to the request body ' +
+        req.body.name +
+        ' With details: ' +
+        req.body.description
+    );
+  })
+  .put((req, res, next) => {
+    res.statusCode = 403;
+    res.end('PUT is not supported on promotions');
+  })
+  .delete((req, res, next) => {
+    res.end('Deleting all the promotions');
+  });
+
+promoRouter
+  .route('/:promoId')
+  .get((req, res, next) => {
+    res.end('The fetched promotion is: ' + req.params.promoId);
+  })
+  .post((req, res, next) => {
+    res.statusCode = 403;
+    res.end('Cannot add request to the promotion:  ' + req.params.promoId);
+  })
+  .put((req, res, next) => {
+    res.write(
+      'The updated promotion is: \n' +
+        req.params.promoId +
+        '  with the name: \n' +
+        req.body.name +
+        '  And the description as: \n' +
+        req.body.description +
+        '\n'
+    );
+    res.end('PUT is updated all promotions' + req.params.promoId);
+  })
+  .delete((req, res, next) => {
+    res.end('Deleting all the data from the promotion: ' + req.params.promoId);
+  });
+
+module.exports = promoRouter;

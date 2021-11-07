@@ -1,50 +1,33 @@
-const mongoose = require("mongoose");
+const express = require('express');
+const http = require('http');
+const morgan = require('morgan');
 
-const Dishes = require("./models/dishes");
+const hostname = 'localhost';
+const port = 3000;
+const bodyParser = require('body-parser');
 
-const url = "mongodb://localhost:27017/example";
-const connect = mongoose.connect(url);
+const app = express();
+app.use(morgan('dev'));
+app.use(bodyParser.json());
 
-connect.then((db) => {
-  console.log("Connected");
+const dishRouter = require('./routes/dishRouter');
+const promoRouter = require('./routes/promoRouter');
+const leaderRouter = require('./routes/leaderRouter');
 
-  Dishes.create({
-    name: "Kabab",
-    description: "Amazing",
-  })
-    .then((dish) => {
-      console.log(dish);
+app.use('/dishes', dishRouter);
+app.use('/promotions', promoRouter);
+app.use('/leaders', leaderRouter);
 
-      return Dishes.findByIdAndUpdate(
-        dish._id,
-        {
-          $set: { description: "Updated Dish" },
-        },
-        {
-          new: true,
-        }
-      ).exec();
-    })
-    .then((dish) => {
-      console.log(dish);
+app.use(express.static(__dirname + '/public'));
 
-      dish.comments.push({
-        rating: 5,
-        comment: "This was an amazing experience",
-        author: "Uzair Ali",
-      });
+app.use((req, res, next) => {
+  res.statusCode = 200;
+  res.setHeader('Content-type', 'text/html');
+  res.end('<html><body><h1>Hello World</h1></body></html>');
+});
 
-      return dish.save();
-    })
-    .then((dish) => {
-      console.log(dish);
+const server = http.createServer(app);
 
-      return Dishes.remove({});
-    })
-    .then(() => {
-      return mongoose.connection.close();
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+server.listen(port, hostname, () => {
+  console.log(`server running at http://${hostname}:${port}`);
 });
