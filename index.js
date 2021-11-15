@@ -8,11 +8,25 @@ const bodyParser = require('body-parser');
 
 const app = express();
 app.use(morgan('dev'));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const dishRouter = require('./routes/dishRouter');
 const promoRouter = require('./routes/promoRouter');
 const leaderRouter = require('./routes/leaderRouter');
+
+const mongoose = require('mongoose');
+const Dishes = require('./models/dishes');
+const url = 'mongodb://127.0.0.1:27017/example';
+const connect = mongoose.connect(url);
+
+connect.then(
+  (db) => {
+    console.log('Connected correctly to server');
+  },
+  (err) => {
+    console.log(err);
+  }
+);
 
 app.use('/dishes', dishRouter);
 app.use('/promotions', promoRouter);
