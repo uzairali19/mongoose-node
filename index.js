@@ -17,6 +17,7 @@ const leaderRouter = require('./routes/leaderRouter');
 const mongoose = require('mongoose');
 const Dishes = require('./models/dishes');
 const Promo = require('./models/promo');
+const Leader = require('./models/leader');
 const url = 'mongodb://127.0.0.1:27017/example';
 const connect = mongoose.connect(url);
 
