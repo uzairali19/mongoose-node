@@ -15,9 +15,6 @@ const promoRouter = require('./routes/promoRouter');
 const leaderRouter = require('./routes/leaderRouter');
 
 const mongoose = require('mongoose');
-const Dishes = require('./models/dishes');
-const Promo = require('./models/promo');
-const Leader = require('./models/leader');
 const url = 'mongodb://127.0.0.1:27017/example';
 const connect = mongoose.connect(url);
 
@@ -29,6 +26,36 @@ connect.then(
     console.log(err);
   }
 );
+
+const auth = (req, res, next) => {
+  console.log(req.headers);
+
+  const authHeaders = req.headers.authorization;
+
+  if (!authHeaders) {
+    const err = new Error('You are not authenticated!');
+    res.setHeader('WWW-Authenticate', 'Basic');
+    err.status = 401;
+    return next(err);
+  }
+
+  const auth = new Buffer(authHeaders.split(' ')[1], 'base64')
+    .toString()
+    .split(':');
+  const username = auth[0];
+  const password = auth[1];
+
+  if (username === 'admin' && password === 'password') {
+    next();
+  } else {
+    const err = new Error('You are not authenticated!');
+    res.setHeader('WWW-Authenticate', 'Basic');
+    err.status = 401;
+    return next(err);
+  }
+};
+
+app.use(auth);
 
 app.use('/dishes', dishRouter);
 app.use('/promotions', promoRouter);

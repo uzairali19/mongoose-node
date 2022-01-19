@@ -24,8 +24,12 @@ To get a local copy up and running follow these simple example steps.
 
 Use
 
-```
+```bash
+# To clone git repo
 git clone https://github.com/uzairali19/mongoose-node.git
+
+# To run mongodb
+mongod --dbpath=data --bind_ip 127.0.0.1
 ```
 
 to clone the branch directly to your machine
@@ -39,7 +43,7 @@ This is used for learning purposes. Feel free to collaborate.
 👤 **Uzair Ali**
 
 - GitHub: [@githubhandle](https://github.com/uzairali19)
-- Twitter: [@twitterhandle](https://twitter.com/MahbubA10454419)
+- Twitter: [@twitterhandle](https://twitter.com/uzairali751)
 - LinkedIn: [LinkedIn](https://www.linkedin.com/in/uzair-ali-964187166/)
 
 ## 🤝 Contributing
