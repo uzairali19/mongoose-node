@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 
 const hostname = 'localhost';
 const port = 3000;
@@ -26,32 +27,44 @@ connect.then(
     console.log(err);
   }
 );
+app.use(cookieParser('12345-67890-09876-54321'));
 
 const auth = (req, res, next) => {
-  console.log(req.headers);
+  console.log(req.signedCookies);
 
-  const authHeaders = req.headers.authorization;
+  if (!req.signedCookies.userId) {
+    const authHeaders = req.headers.authorization;
 
-  if (!authHeaders) {
-    const err = new Error('You are not authenticated!');
-    res.setHeader('WWW-Authenticate', 'Basic');
-    err.status = 401;
-    return next(err);
-  }
+    if (!authHeaders) {
+      const err = new Error('You are not authenticated!');
+      res.setHeader('WWW-Authenticate', 'Basic');
+      err.status = 401;
+      return next(err);
+    }
 
-  const auth = new Buffer(authHeaders.split(' ')[1], 'base64')
-    .toString()
-    .split(':');
-  const username = auth[0];
-  const password = auth[1];
+    const auth = new Buffer.from(authHeaders.split(' ')[1], 'base64')
+      .toString()
+      .split(':');
+    const username = auth[0];
+    const password = auth[1];
 
-  if (username === 'admin' && password === 'password') {
-    next();
+    if (username === 'admin' && password === 'password') {
+      res.cookie('userId', 'admin', { signed: true });
+      next();
+    } else {
+      const err = new Error('You are not authenticated!');
+      res.setHeader('WWW-Authenticate', 'Basic');
+      err.status = 401;
+      return next(err);
+    }
   } else {
-    const err = new Error('You are not authenticated!');
-    res.setHeader('WWW-Authenticate', 'Basic');
-    err.status = 401;
-    return next(err);
+    if (req.signedCookies.userId === 'admin') {
+      next();
+    } else {
+      const err = new Error('You are not authenticated!');
+      err.status = 401;
+      return next(err);
+    }
   }
 };
 

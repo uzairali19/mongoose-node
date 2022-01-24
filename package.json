@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/uzairali19/mongoose-node#readme",
   "dependencies": {
+    "cookie-parser": "^1.4.6",
     "express": "^4.17.1",
     "mongodb": "^4.1.4",
     "mongoose": "^4.13.21",
