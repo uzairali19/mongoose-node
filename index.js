@@ -12,6 +12,18 @@ const port = 3000;
 const bodyParser = require('body-parser');
 
 const app = express();
+
+app.all('*', (req, res, next) => {
+  if (req.secure) {
+    return next();
+  } else {
+    res.redirect(
+      307,
+      'https://' + req.hostname + ':' + app.get('secPort') + req.url
+    );
+  }
+});
+
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -53,3 +65,5 @@ const server = http.createServer(app);
 server.listen(port, hostname, () => {
   console.log(`server running at http://${hostname}:${port}`);
 });
+
+module.exports = app;
