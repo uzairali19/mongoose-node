@@ -7,7 +7,7 @@ const FileStore = require('session-file-store')(session);
 const passport = require('passport');
 const authenticate = require('./authenticate');
 const config = require('./config');
-const hostname = 'localhost';
+const hostname = '127.0.0.1';
 const port = 3000;
 const bodyParser = require('body-parser');
 
@@ -31,14 +31,15 @@ const dishRouter = require('./routes/dishRouter');
 const promoRouter = require('./routes/promoRouter');
 const leaderRouter = require('./routes/leaderRouter');
 const usersRouter = require('./routes/userRouter');
+const uploadRouter = require('./routes/uploadRouter');
 
 const mongoose = require('mongoose');
 const url = config.mongoUrl;
-const connect = mongoose.connect(url);
+const connect = mongoose.connect('mongodb://127.0.0.1/example');
 
 connect.then(
   (db) => {
-    console.log('Connected correctly to server');
+    console.log('Connected correctly to server', db.connections);
   },
   (err) => {
     console.log(err);
@@ -53,6 +54,7 @@ app.use('/users', usersRouter);
 app.use('/dishes', dishRouter);
 app.use('/promotions', promoRouter);
 app.use('/leaders', leaderRouter);
+app.use('/imageUpload', uploadRouter);
 
 app.use((req, res, next) => {
   res.statusCode = 200;

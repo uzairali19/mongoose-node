@@ -1,15 +1,17 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const Dishes = require('../models/dishes');
-const dishRouter = express.Router();
 const authenticate = require('../authenticate');
+
+const Dishes = require('../models/dishes');
+
+const dishRouter = express.Router();
 
 dishRouter.use(bodyParser.json());
 
 dishRouter
   .route('/')
-  .get(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  .get((req, res, next) => {
     Dishes.find({})
       .populate('comments.author')
       .then(
@@ -23,7 +25,7 @@ dishRouter
       .catch((err) => next(err));
   })
   .post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
-    Dishes.create(req.body)
+    Dishes.create(req.body) // req.body made available via body-parser
       .then(
         (dish) => {
           console.log('Dish Created ', dish);
@@ -59,7 +61,7 @@ dishRouter
 dishRouter
   .route('/:dishId')
   .get((req, res, next) => {
-    Dishes.findById(req.params.dishId)
+    Dishes.findById(req.params.dishId) // Query
       .populate('comments.author')
       .then(
         (dish) => {
@@ -136,13 +138,17 @@ dishRouter
       .then(
         (dish) => {
           if (dish != null) {
-            req.body.author = req.user._id;
+            req.body.author = req.user._id; // user._id since authenticated
             dish.comments.push(req.body);
             dish.save().then(
               (dish) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(dish);
+                Dishes.findById(dish._id)
+                  .populate('comments.author')
+                  .then((dish) => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(dish);
+                  });
               },
               (err) => next(err)
             );
@@ -233,11 +239,12 @@ dishRouter
     Dishes.findById(req.params.dishId)
       .then(
         (dish) => {
-          if (
-            dish != null &&
-            dish.comments.id(req.params.commentId) != null &&
-            dish.comments.id(req.params.commentId).author.equals(req.user._id)
-          ) {
+          if (dish != null && dish.comments.id(req.params.commentId) != null) {
+            if (!req.user._id.equals(dish.comments.id(req.params.commentId))) {
+              err = new Error('You are not authorized to edit this comment');
+              err.status = 403;
+              return next(err);
+            }
             if (req.body.rating) {
               dish.comments.id(req.params.commentId).rating = req.body.rating;
             }
@@ -246,9 +253,13 @@ dishRouter
             }
             dish.save().then(
               (dish) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(dish);
+                Dishes.findById(dish._id)
+                  .populate('comments.author')
+                  .then((dish) => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(dish);
+                  });
               },
               (err) => next(err)
             );
@@ -256,13 +267,9 @@ dishRouter
             err = new Error('Dish ' + req.params.dishId + ' not found');
             err.status = 404;
             return next(err);
-          } else if (dish.comments.id(req.params.commentId) == null) {
+          } else {
             err = new Error('Comment ' + req.params.commentId + ' not found');
             err.status = 404;
-            return next(err);
-          } else {
-            err = new Error('you are not authorized to update this comment!');
-            err.status = 403;
             return next(err);
           }
         },
@@ -274,17 +281,30 @@ dishRouter
     Dishes.findById(req.params.dishId)
       .then(
         (dish) => {
-          if (
-            dish != null &&
-            dish.comments.id(req.params.commentId) != null &&
-            dish.comments.id(req.params.commentId).author.equals(req.user._id)
-          ) {
+          if (dish != null && dish.comments.id(req.params.commentId) != null) {
+            if (
+              dish.comments.id(req.params.commentId).author.toString() !=
+              req.user._id.toString()
+            ) {
+              console.log(
+                req.user._id.toString() +
+                  'hello world' +
+                  dish.comments.id(req.params.commentId).author.toString()
+              );
+              err = new Error('You are not authorized to edit this comment');
+              err.status = 403;
+              return next(err);
+            }
             dish.comments.id(req.params.commentId).remove();
             dish.save().then(
               (dish) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(dish);
+                Dishes.findById(dish._id)
+                  .populate('comments.author')
+                  .then((dish) => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(dish);
+                  });
               },
               (err) => next(err)
             );
@@ -292,13 +312,9 @@ dishRouter
             err = new Error('Dish ' + req.params.dishId + ' not found');
             err.status = 404;
             return next(err);
-          } else if (dish.comments.id(req.params.commentId) == null) {
+          } else {
             err = new Error('Comment ' + req.params.commentId + ' not found');
             err.status = 404;
-            return next(err);
-          } else {
-            err = new Error('you are not authorized to delete this comment!');
-            err.status = 403;
             return next(err);
           }
         },
